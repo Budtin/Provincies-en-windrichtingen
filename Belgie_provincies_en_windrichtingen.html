@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>België – Provincies, Hoofdsteden & Windrichtingen</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#17324d}
+.container{max-width:900px;margin:auto;padding:24px}
+h1{text-align:center}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:12px 18px;border:0;border-radius:10px;background:#dce8f5;cursor:pointer;font-weight:bold}
+.tab.active{background:#2868a8;color:white}
+.card{background:white;border-radius:16px;padding:24px;box-shadow:0 3px 12px #0001}
+.answers{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.answer{padding:14px;border:2px solid #d6e0ea;border-radius:10px;background:white;cursor:pointer;font-size:16px}
+.answer:hover{border-color:#2868a8}
+.correct{background:#e4f5e9!important;border-color:#43a05b!important}
+.wrong{background:#fde8e8!important;border-color:#c44!important}
+.feedback{min-height:28px;font-weight:bold;margin:15px 0}
+.next{padding:11px 18px;border:0;border-radius:9px;background:#2868a8;color:white;cursor:pointer}
+.hidden{display:none}
+.tip{background:#eef5fb;padding:12px;border-left:4px solid #2868a8;margin-bottom:15px}
+.compass{display:block;margin:15px auto;width:240px;height:240px}
+.score{text-align:center;margin-top:20px;font-weight:bold}
+@media(max-width:600px){.answers{grid-template-columns:1fr}.container{padding:14px}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🇧🇪 België: provincies & windrichtingen</h1>
+<p style="text-align:center">Oefen de 10 provincies, hun provinciehoofdsteden en de windrichtingen.</p>
+
+<div class="tabs">
+<button class="tab active" data-tab="provincies">Provincies</button>
+<button class="tab" data-tab="hoofdsteden">Hoofdsteden</button>
+<button class="tab" data-tab="wind">Windrichtingen</button>
+</div>
+
+<section id="provincies" class="card">
+<h2>1. Provincies herkennen</h2>
+<p>Welke provincie hoort bij deze provinciehoofdstad?</p>
+<h3 id="provVraag"></h3>
+<div id="provAntwoorden" class="answers"></div>
+<div id="provFeedback" class="feedback"></div>
+<button id="provVolgende" class="next hidden">Volgende vraag</button>
+</section>
+
+<section id="hoofdsteden" class="card hidden">
+<h2>2. Provinciehoofdsteden</h2>
+<p>Welke provinciehoofdstad hoort bij deze provincie?</p>
+<h3 id="stadVraag"></h3>
+<div id="stadAntwoorden" class="answers"></div>
+<div id="stadFeedback" class="feedback"></div>
+<button id="stadVolgende" class="next hidden">Volgende vraag</button>
+</section>
+
+<section id="wind" class="card hidden">
+<h2>3. Windrichtingen</h2>
+<p>Gebruik de windroos om de juiste richting te bepalen.</p>
+<div class="tip"><b>Windroos:</b> N = noord · NO = noordoost · O = oost · ZO = zuidoost · Z = zuid · ZW = zuidwest · W = west · NW = noordwest.</div>
+
+<svg class="compass" viewBox="0 0 240 240" aria-label="Windroos">
+<circle cx="120" cy="120" r="100" fill="none" stroke="#17324d" stroke-width="2"/>
+<line x1="120" y1="20" x2="120" y2="220" stroke="#b5c5d5"/>
+<line x1="20" y1="120" x2="220" y2="120" stroke="#b5c5d5"/>
+<line x1="49" y1="49" x2="191" y2="191" stroke="#b5c5d5"/>
+<line x1="191" y1="49" x2="49" y2="191" stroke="#b5c5d5"/>
+<polygon points="120,22 128,112 120,120 112,112" fill="#dce8f5"/>
+<text x="120" y="15" text-anchor="middle" font-weight="bold">N</text>
+<text x="202" y="45" text-anchor="middle" font-weight="bold">NO</text>
+<text x="230" y="126" text-anchor="middle" font-weight="bold">O</text>
+<text x="202" y="204" text-anchor="middle" font-weight="bold">ZO</text>
+<text x="120" y="235" text-anchor="middle" font-weight="bold">Z</text>
+<text x="38" y="204" text-anchor="middle" font-weight="bold">ZW</text>
+<text x="10" y="126" text-anchor="middle" font-weight="bold">W</text>
+<text x="38" y="45" text-anchor="middle" font-weight="bold">NW</text>
+</svg>
+
+<h3 id="windVraag"></h3>
+<div id="windAntwoorden" class="answers"></div>
+<div id="windFeedback" class="feedback"></div>
+<button id="windVolgende" class="next hidden">Volgende vraag</button>
+</section>
+
+<div class="score">Score: <span id="score">0</span> / <span id="totaal">0</span></div>
+</div>
+
+<script>
+const data=[
+["West-Vlaanderen","Brugge"],["Oost-Vlaanderen","Gent"],["Antwerpen","Antwerpen"],
+["Vlaams-Brabant","Leuven"],["Limburg","Hasselt"],["Waals-Brabant","Wavre"],
+["Henegouwen","Bergen"],["Luik","Luik"],["Luxemburg","Aarlen"],["Namen","Namen"]
+];
+const dirs=["noord","noordoost","oost","zuidoost","zuid","zuidwest","west","noordwest"];
+const windQuestions=[
+["West-Vlaanderen ligt ten westen van Oost-Vlaanderen.","west"],
+["Oost-Vlaanderen ligt ten westen van Antwerpen.","west"],
+["Antwerpen ligt ten noorden van Vlaams-Brabant.","noord"],
+["Limburg ligt ten oosten van Antwerpen.","oost"],
+["Vlaams-Brabant ligt ten oosten van Oost-Vlaanderen.","oost"],
+["West-Vlaanderen ligt ten noordwesten van Henegouwen.","noordwest"],
+["Namen ligt ten zuidoosten van Henegouwen.","zuidoost"],
+["Luik ligt ten oosten van Namen.","oost"],
+["Luxemburg ligt ten zuidoosten van Namen.","zuidoost"],
+["Waals-Brabant ligt ten noordwesten van Namen.","noordwest"],
+["Hasselt ligt ten noordoosten van Leuven.","noordoost"],
+["Brugge ligt ten noordwesten van Gent.","noordwest"],
+["Gent ligt ten noorden van Bergen.","noord"],
+["Leuven ligt ten noordoosten van Bergen.","noordoost"],
+["Aarlen ligt ten zuidoosten van Luik.","zuidoost"],
+["Namen ligt ten zuidwesten van Leuven.","zuidwest"],
+["Bergen ligt ten zuidwesten van Brussel.","zuidwest"],
+["Antwerpen ligt ten noordoosten van Gent.","noordoost"],
+["Hasselt ligt ten oosten van Antwerpen.","oost"],
+["Brugge ligt ten westen van Antwerpen.","west"],
+["Namen ligt ten zuiden van Leuven.","zuid"],
+["Luik ligt ten noordoosten van Namen.","noordoost"]
+];
+let score=0,total=0,current=null;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function el(id){return document.getElementById(id)}
+function update(){el("score").textContent=score;el("totaal").textContent=total}
+
+function newQuestion(type){
+ let q,correct,answers,qEl,aEl,fEl,nEl;
+ if(type==="provincies"){
+  const x=data[Math.floor(Math.random()*data.length)];
+  q="Welke provincie heeft "+x[1]+" als provinciehoofdstad?";
+  correct=x[0]; answers=shuffle(data.map(x=>x[0]));
+  qEl=el("provVraag");aEl=el("provAntwoorden");fEl=el("provFeedback");nEl=el("provVolgende");
+ }else if(type==="hoofdsteden"){
+  const x=data[Math.floor(Math.random()*data.length)];
+  q="Wat is de provinciehoofdstad van "+x[0]+"?";
+  correct=x[1]; answers=shuffle(data.map(x=>x[1]));
+  qEl=el("stadVraag");aEl=el("stadAntwoorden");fEl=el("stadFeedback");nEl=el("stadVolgende");
+ }else{
+  const x=windQuestions[Math.floor(Math.random()*windQuestions.length)];
+  q=x[0];correct=x[1];answers=shuffle(dirs);
+  qEl=el("windVraag");aEl=el("windAntwoorden");fEl=el("windFeedback");nEl=el("windVolgende");
+ }
+ current={correct,answered:false,fEl,nEl};
+ qEl.textContent=q;aEl.innerHTML="";fEl.textContent="";nEl.classList.add("hidden");
+ answers.forEach(ans=>{
+  const b=document.createElement("button");b.className="answer";b.textContent=ans.charAt(0).toUpperCase()+ans.slice(1);
+  b.onclick=()=>answer(ans,b);aEl.appendChild(b);
+ });
+}
+function answer(ans,b){
+ if(current.answered)return;
+ current.answered=true;total++;
+ if(ans===current.correct){score++;b.classList.add("correct");current.fEl.textContent="Goed gedaan! ✓";}
+ else{b.classList.add("wrong");current.fEl.textContent="Nog niet. Het juiste antwoord is: "+current.correct+".";}
+ current.nEl.classList.remove("hidden");update();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");
+ document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));el(t.dataset.tab).classList.remove("hidden");
+});
+el("provVolgende").onclick=()=>newQuestion("provincies");
+el("stadVolgende").onclick=()=>newQuestion("hoofdsteden");
+el("windVolgende").onclick=()=>newQuestion("wind");
+newQuestion("provincies");newQuestion("hoofdsteden");newQuestion("wind");update();
+</script>
+</body>
+</html>
